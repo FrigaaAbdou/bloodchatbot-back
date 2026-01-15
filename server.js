@@ -5,8 +5,24 @@ import { answerUserMessage } from "./src/chatbot.js";
 import { openai } from "./src/aiClient.js";
 import { logMessage, getConversations } from "./src/logger.js";
 
+const allowedOrigins = new Set([
+  "https://sangbot.netlify.app",
+  "http://localhost:5173",
+  "http://localhost:4173",
+  process.env.FRONTEND_ORIGIN,
+]);
+
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.has(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
+  }),
+);
 app.use(express.json());
 app.use((req, res, next) => {
   const start = process.hrtime.bigint();
